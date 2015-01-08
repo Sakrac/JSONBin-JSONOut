@@ -1,0 +1,49 @@
+{
+    "enum": {
+        "target" : [ "ENEMY", "FRIEND" ]
+    },
+    
+     "nodes": {
+        "sequence": { },
+        "selector": { },
+        "parallel": { },
+        "subtree": {
+            "file": {
+                "type": "text",
+                "default": "subtree.json"
+            }
+        },
+
+        "Loop Forever": { },
+        "Force Success": { },
+        "Timer": {
+            "duration": {
+                "type": "float",
+                "min": 0.0,
+                "default": 2.0
+            }
+        },
+
+        "Idle": { },
+        "Animation": {
+            "name": {
+                "type": "hash",
+                "default": "empty"
+            }
+        },
+
+        "ShootAt": {
+            "target": {
+                "type" : "enum",
+                "enum" : "target"
+            }
+        },
+
+        "TurnTo": {
+            "target": {
+                "type" : "enum",
+                "enum" : "target"
+            }
+        }
+    }
+}

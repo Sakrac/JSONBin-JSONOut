@@ -1,0 +1,32 @@
+{
+    "types": "sample_behavior_types.json",
+    "behaviortree": {
+        "Loop Forever": {
+            "children": {
+                "sequence": {
+                    "children": {
+                        "parallel": {
+                            "children": {
+                                "Timer": {
+                                    "members": {
+                                        "duration": 1.5
+                                    }
+                                },
+                                "subtree": {
+                                    "members": {
+                                        "file" : "other_things.json"
+                                    }
+                                }
+                            }
+                        },
+                        "Animation": {
+                            "members": {
+                                "anim": "punch"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
