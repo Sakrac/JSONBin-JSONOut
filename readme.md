@@ -58,11 +58,12 @@ Samples are located in the samples folder.
 - sample_numbers.cpp is a numeric test to check that ranges of numbers save correctly
 - sample_resave.cpp loads a JSON file and then saves it again
 
+More documentation is available on the GitHub wiki page: https://github.com/Sakrac/JSONBin-JSONOut/wiki
+
 Reasoning
 ---------
 
 http://utf8everywhere.org/
-
 http://www.joshbarczak.com/blog/?p=580
 
 The overarching goal of this implementation is to remove layers of abstraction, remove dependencies outside of clib, and minimize the number of allocations. It isn't necessary to keep the writing and parsing parts of a format compatible as long as both are easy to use, which means parsed data don't need to deal with inserting values in the middle and writing data can store off data as necessary without keeping a complete representation in-memory. A secondary goal is performance which became apparent after attempting to iterate with test files in the range of 100-200 MB. To reach acceptable performance a simple hash table approach was implemented to compare strings, and custom functions for reading and writing floating point values.
@@ -75,9 +76,9 @@ All this amounts to improving something that wasn't causing any noticable perfor
 
 To illustrate the gains of reducing allocations in a parser I use a large example file (https://github.com/zeMirco/sf-city-lots-json) with the following properties:
 
-- Number of JSON Items: 13805884
-- Strings in original: 5109655
-- Bytes of strings in original: 41600031
+Number of JSON Items: 13805884
+Strings in original: 5109655
+Bytes of strings in original: 41600031
 
 Assuming that an allocator keeps a 16 byte block header and a minimum alignment of 16 bytes, the JSON Item structure that may only use 12 bytes actually requires 32 bytes meaning just the items use over 421 MB, compared to 158 MB in an array of items.
 That does not include the allocations for the strings which adds 78 MB of allocation headers to the 40 MB of actual string data reaching a total of nearly 540 MB.
