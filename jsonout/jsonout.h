@@ -1,11 +1,11 @@
-//
+﻿//
 // JSONOut
 //
 //
 // Summary
 //	- JSONOut (struct) is used to maintain an output to a json file
-//	- Keeps a small memory buffer but writes that to the file as
-//		soon as it fills up.
+//	- Keeps a small memory buffer and writes that to the file as
+//		it fills up.
 //	- No internal allocations (except what the file system might do)
 //
 // Usage
@@ -14,14 +14,27 @@
 //		You'll need to pass in a FILE pointer, either in the constructor or
 //		by calling set_file().
 //	- Call 'push' or 'element' functions to add values, objects or arrays.
+//		push functions take a name and a value, element functions requires
+//		an array and only takes values.
 //	- 'element' usage can be replaced with 'push', 'element' functions are
-//		provided to distinguish code writing arrays and code writing objects.
-//	- To close an object or an array call scope_end
+//		provided to distinguish code writing arrays and code writing objects
+//		and the name argument passed in to push will just be ignored.
+//	- To add an object, call push_object(name) or element_object() if creating
+//		an object within an array.
+//	- To add an array, call push_array(name) or element_array() if creating
+//		an array within an array.
+//	- To close an object or an array call scope_end(), or close_array()/close_object()
 //	- To finish call finish.
-//	- If an error occurs nothing further will be added to the file and
-//		any pushing operations will return false. It is safe to check
+//	- If an error occurs push/element function will return false and
+//		nothing further will be added to the file. It is safe to check
 //		for errors only occasionally or at the end. Call last_error()
 //		to get an error code (JSONOutError)
+//
+// Optional compiled traits: (comment in/out defines or specify as precompiled flags)
+//	- JO_SUPPORT_WCHAR: Enable wchar_t as arguments to push/element functions
+//	- JO_FAST_FRAC: Since snprintf can be really slow with a massive amount
+//		if floating point printing JSONOut uses an internal floating point to
+//		string function by default. This can be disabled.
 //
 // Notes
 //	- Users changing code to fit a purpose is encouraged over supplying
@@ -32,8 +45,8 @@
 // License
 //	Public Domain; no warranty implied; use at your own risk; attribution appreciated.
 //	In no event will the authors be held liable for any damages arising from the use of this software.
-//	Created by Carl-Henrik Sk�rstedt (#Sakrac)
-//	Version 0.99
+//	Created by Carl-Henrik Skårstedt (#Sakrac)
+//	Version 1.0
 //
 //
 

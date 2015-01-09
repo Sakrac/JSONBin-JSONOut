@@ -1,4 +1,4 @@
-#ifndef __JB_H__
+﻿#ifndef __JB_H__
 #define __JB_H__
 
 //
@@ -15,20 +15,24 @@
 //	- Iterate over an array of fixed size items to process data (tree structure intact)
 //	- Single call to free(return address) to clean up.
 //	- JBItem member functions
-//		getType(): item type (see JBType enum)
-//		getName(): name of item (if name not stored, return string of hash;
-//					array elements don't have names)
-//		getNameLen(): length of item name in characters
-//		getStr(): if item is a string value and is valid return the string pointer
-//		getStrLen(): length of string value in characters
-//		getInt(): if numeric value, return integer value otherwise 0
-//		getFloat(): if numeric value, return floating point valie, otherwise 0
-//		getBool(): if boolean value, return value
-//		size(): return number of direct children (only for array and object types)
-//		end(): return terminator for JBIterator (always null pointer)
-//		begin(): return first JBIterator for children if they exist
-//		findByHash(): return child with hashed name of argument if it exists (requires compile with hash)
-//	- JBIterator usage (optional method of parsing)
+//		- getType(): Get item type (JB_OBJECT, JB_STRING, etc. See JBType enum)
+//		- getHash(): Get the hashed value of the item name (user defined or fnv1a)
+//		- getName(): Get the name as a string (if included, otherwise a string of the hash)
+//		- getNameLen(): Get the number of chars/wchars for the name
+//		- getStr(): Get the string value of the item (requires type JB_STRING)
+//		- getStrLen(): Get the length of the string value of the item
+//		- getInt(): Get the integer value of the item (requires type JB_INT or JB_FLOAT)
+//		- getFloat(): Get the float value of the item (requires type JB_INT or JB_FLOAT)
+//		- getBool(): Get the bool value of the item (requires type JB_BOOL)
+//		- getChild(): Get the first child item (requires type JB_OBJECT or JB_ARRAY)
+//		- getSibling(): Get the next item at this level (returns 0 after last)
+//		- getChildCount(): Get the number of child items (requires type JB_OBJECT or JB_ARRAY)
+//		- size(): same function as getChildCount()
+//		- end(): returns terminating JBIterator (NULL pointer)
+//		- begin(): returns a JBIterator of getChild()
+//		- findByHash(hash): returns a child item of this item with a name that is hashed to this value
+//
+//	- JBIterator usage (optional method of parsing, more STL-like)
 //		++JBIterator: step to next item at current hierarchy level
 //		successor(): return next item at current hierarchy level
 //		has_successor(): check if there is a successor
@@ -81,8 +85,8 @@
 // License
 //	Public Domain; no warranty implied; use at your own risk; attribution appreciated.
 //	In no event will the authors be held liable for any damages arising from the use of this software.
-//	Created by Carl-Henrik Sk�rstedt (#Sakrac)
-//	Version 0.99
+//	Created by Carl-Henrik Skårstedt (#Sakrac)
+//	Version 1.0
 //
 
 namespace jbin {
