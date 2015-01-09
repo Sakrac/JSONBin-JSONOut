@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Workspace
+   version = "1.0">
+   <FileRef
+      location = "group:fnv1a.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:sample_behaviortree.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:sample_numbers.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:sample_resave.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:sample_scenegraph.xcodeproj">
+   </FileRef>
+</Workspace>

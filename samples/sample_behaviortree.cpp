@@ -483,7 +483,7 @@ static void* TypesBinary(typeStruct *pStructs, int *size)
 
 	*size = countSize + structOffsSize + structSize;
 	void *ret = malloc(countSize + structOffsSize + structSize);
-	sortHashOffs *work = (sortHashOffs*)malloc(sizeof(sortHashOffs) * maxSort);
+    sortHashOffs *work = maxSort ? (sortHashOffs*)malloc(sizeof(sortHashOffs) * maxSort) : NULL;
 
 	// sort the structs by ID
 	int n = 0;
@@ -531,7 +531,8 @@ static void* TypesBinary(typeStruct *pStructs, int *size)
 		}
 		pDest = pOffsets;
 	}
-	free(work);
+    if (work)
+        free(work);
 	return ret;
 }
 
@@ -689,13 +690,21 @@ static bool LoadTree(const char *filename)
 		}
 
 		// cleanup
-		for (enumArray *pEnum = types.pEnums; pEnum; pEnum = pEnum->next)
+		for (enumArray *pEnum = types.pEnums; pEnum;) {
+			enumArray *next = pEnum->next;
 			free(pEnum);
+			pEnum = next;
+		}
 
-		for (typeStruct *pStruct = types.pStructs; pStruct; pStruct = pStruct->next)
+		for (typeStruct *pStruct = types.pStructs; pStruct;) {
+			typeStruct *next = pStruct->next;
 			free(pStruct);
+			pStruct = next;
+		}
 
 		free(types.text.pStart);
+        if (types.aTextFixup)
+            free((void*)types.aTextFixup);
 		return true;
 	}
 	return false;
