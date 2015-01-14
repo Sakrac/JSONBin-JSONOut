@@ -191,7 +191,7 @@ static unsigned int fnv1A(const char *s, unsigned int l)
 static enumArray* ParseEnum(const jbin::JBItem *pEnum)
 {
 	if (pEnum && pEnum->getType() == jbin::JB_ARRAY) {
-		int num = pEnum->getChildCount();
+		int num = (int)pEnum->getChildCount();
 		if (enumArray *pArray = (enumArray*)malloc(sizeof(enumArray) + sizeof(unsigned int) * (num - 1))) {
 			pArray->id = pEnum->getHash();
 			pArray->numEnums = num;
@@ -230,7 +230,7 @@ static bool ParseValue(const jbin::JBItem *pItem, typeType type, unsigned int en
 		switch (type) {
 			case TYP_INT:
 				if (pItem->getType() == jbin::JB_INT) {
-					value->i = pItem->getInt();
+					value->i = (int)pItem->getInt();
 					return true;
 				}
 				break;
@@ -242,7 +242,7 @@ static bool ParseValue(const jbin::JBItem *pItem, typeType type, unsigned int en
 				break;
 			case TYP_FLOAT:
 				if (pItem->getType() == jbin::JB_FLOAT || pItem->getType() == jbin::JB_INT) {
-					value->f = pItem->getFloat();
+					value->f = (float)pItem->getFloat();
 					return true;
 				}
 				break;
@@ -343,7 +343,7 @@ static typeStruct* ParseStruct(const jbin::JBItem *pStructItem, textTable *text,
 	if (!pStructItem || pStructItem->getType() != jbin::JB_OBJECT)
 		return NULL;
 
-	int memberCount = pStructItem->getChildCount();
+	int memberCount = (int)pStructItem->getChildCount();
 	int structSize = sizeof(typeStruct) + sizeof(typeMember) * (memberCount - 1);
 
 	typeStruct *pStruct = (typeStruct*)malloc(structSize);
@@ -421,10 +421,21 @@ static void* LoadFile(const char *filename, unsigned int *size)
 // LOAD THE NODE TYPES JSON FILE
 //
 
-static bool LoadTypes(const char *filename, typeData *pData)
+static bool LoadTypes(const char *filename, const char *origfile, typeData *pData)
 {
 	unsigned int size = 0;
-	if (void *data = LoadFile(filename, &size)) {
+	char pathedFile[512];
+	// origfile may have a path that is necessary for filename
+	memcpy(pathedFile, filename, strlen(filename)+1);
+	for (int i = (int)strlen(origfile)-1; i>=0; --i) {
+		if (origfile[i]=='\\' || origfile[i]=='/') {
+			memcpy(pathedFile, origfile, i+1);
+			memcpy(pathedFile+i+1, filename, strlen(filename)+1);
+			break;
+		}
+	}
+
+	if (void *data = LoadFile(pathedFile, &size)) {
 		const unsigned char *buf = (const unsigned char*)data;
 		if (*buf == 0xef && buf[1] == 0xbb && buf[2] == 0xbf) { size -= 3; buf += 3; }
 
@@ -633,7 +644,7 @@ static bool LoadTree(const char *filename)
 
 		// load the "types" file
 		if (const jbin::JBItem *pTypes = pJSON->findByHash(_FNV1A_types))
-			typesLoaded = pTypes->getType() == jbin::JB_STRING && LoadTypes(pTypes->getStr(), &types);
+			typesLoaded = pTypes->getType() == jbin::JB_STRING && LoadTypes(pTypes->getStr(), filename, &types);
 
 		// If type info was loaded ok proceed with the nodes
 		if (typesLoaded) {
@@ -713,6 +724,6 @@ static bool LoadTree(const char *filename)
 
 int main(int argc, char **argv)
 {
-	LoadTree("samples/sample_behavior_tree.json");
+	LoadTree("../samples/sample_behavior_tree.json");
 	return 0;
 }

@@ -18,7 +18,7 @@
 static bool ExportJSON(FILE *f, const jbin::JBItem *pJSON)
 {
 	// avoid recursion by keeping an internal stack on the stack
-	jout::JSONOut o(f);
+	jout::JSONOut o(f, pJSON->getType()==jbin::JB_ARRAY);
 	const jbin::JBItem* aStack[jbin::JSON_MAX_DEPTH];
 	int sp = 0;
 

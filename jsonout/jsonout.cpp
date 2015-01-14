@@ -28,34 +28,58 @@ bool JSONOut::write_buf()
 	return error(ERR_NO_FILE);
 }
 
-JSONOut::JSONOut() : f(0), hier_depth(0), indent_len(2), buf_cur(0), error_cause(ERR_NONE)
+JSONOut::JSONOut(bool rootArray) : f(0), hier_depth(0), indent_len(2), buf_cur(0), error_cause(ERR_NONE)
 {
 	indent[0] = ' '; indent[1] = ' '; indent[2] = 0;
-	reset();
+	reset(rootArray);
 }
-JSONOut::JSONOut(void *FILE_out) : f(FILE_out), hier_depth(0), indent_len(2), buf_cur(0), error_cause(ERR_NONE)
+JSONOut::JSONOut(void *FILE_out, bool rootArray) : f(FILE_out), hier_depth(0), indent_len(2), buf_cur(0), error_cause(ERR_NONE)
 {
 	indent[0] = ' '; indent[1] = ' '; indent[2] = 0;
-	reset();
+	reset(rootArray);
 }
 
-void JSONOut::reset()
+void JSONOut::reset(bool rootArray)
 {
 	hier_depth = 1;
 	hasValue.clear(0);
 	hasValue.clear(1);
-	isArray.clear(0);
-	isArray.clear(1);
 	buf_cur = 0;
-	add_char('{');
+	if (rootArray) {
+#ifdef JO_ALLOW_ROOT_ARRAY
+		isArray.clear(0);
+		isArray.clear(1);
+		add_char('[');
+#else
+		error(ERR_ROOT_ARRAY);
+#endif
+	} else {
+		isArray.clear(0);
+		isArray.clear(1);
+		add_char('{');
+	}
 	prev_type = JO_NONE;
+}
+
+bool JSONOut::set_rootArray()
+{
+#ifdef JO_ALLOW_ROOT_ARRAY
+	if (hier_depth==1) {
+		isArray.set(0);
+		isArray.set(1);
+		prev_type = JO_ARRAY;
+		buf_cur = 0;
+		add_char('[');
+		return true;
+	}
+#endif
+	return error(ERR_ROOT_ARRAY);
 }
 
 void JSONOut::set_file(void *FILE_out)
 {
 	f = FILE_out;
 }
-
 
 void JSONOut::set_indent(const char *spacing)
 {
@@ -1182,7 +1206,17 @@ bool JSONOut::finish()
 	if (hier_depth != 1)
 		return error(isArray[hier_depth] ? ERR_OPEN_ARRAY : ERR_OPEN_OBJECT);	// didn't properly close all opened objects/arrays
 
-	if (!(new_line() && add_char('}') && new_line()))	// add the final }
+	if (!new_line())
+		return false;
+#ifdef JO_ALLOW_ROOT_ARRAY
+	if (isArray[0]) {
+		if (!add_char(']')) // in case of array json add the final ']'
+			return false;
+	} else
+#endif
+	if (!add_char('}')) // add the final }
+		return false;
+	if (!new_line())
 		return false;
 
 	bool ret = write_buf();

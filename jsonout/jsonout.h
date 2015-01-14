@@ -35,6 +35,9 @@
 //	- JO_FAST_FRAC: Since snprintf can be really slow with a massive amount
 //		if floating point printing JSONOut uses an internal floating point to
 //		string function by default. This can be disabled.
+//	- JO_ALLOW_ROOT_ARRAY: Allow JSON output to be an array instead of a
+//		collection of objects. This is not valid JSON but some versions of JSON
+//		parsers apparently allows and expects it.
 //
 // Notes
 //	- Users changing code to fit a purpose is encouraged over supplying
@@ -55,6 +58,7 @@
 
 #define JO_SUPPORT_WCHAR	// enable wchar_t support (saved JSON will still be utf-8, but no conversion needed for function calls)
 #define JO_FAST_FRAC		// instead of using snprintf use a faster way to output numbers as text (snprintf is really slow)
+#define JO_ALLOW_ROOT_ARRAY	// not a valid JSON file, but this case exists. Enable root array from the JSONOut constructor or set it before adding items.
 
 namespace jout {
 
@@ -77,6 +81,7 @@ struct JSONOut {
 		ERR_OPEN_ARRAY,		// calling finish without closing an array
 		ERR_OPEN_OBJECT,	// calling finish without closing an object
 		ERR_TOO_DEEP,		// the hierarchy is deeper, edit MAX_JSONOUT_DEPTH for more
+		ERR_ROOT_ARRAY,		// switching file type to a JSON array was invalide
 	};
 		
 	enum { 
@@ -127,14 +132,15 @@ struct JSONOut {
 	JOBitSet<MAX_JSONOUT_DEPTH> isArray;	// tracking if the current hierarchical depth is an array or an object
 	char aFileBuf[JO_FILE_BUFFER_SIZE];	// the filebuffer
 
-	JSONOut();
-	JSONOut(void *FILE_out);
+	JSONOut(bool rootArray=false);
+	JSONOut(void *FILE_out, bool rootArray=false);
 	void set_file(void *FILE_out);
 	void set_indent(const char *spacing);
+	bool set_rootArray(); // if array on root is allowed, call this before adding any items to switch to an array file.
 	bool finish(); // call this after adding all values to write out remaining buffer to file
 	bool inArray() const { return isArray[hier_depth]; }
 	int depth() const { return hier_depth; }
-	void reset();
+	void reset(bool rootArray=false);
 	JSONOutError last_error() const { return error_cause; }
 
 	// push values

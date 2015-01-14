@@ -81,6 +81,11 @@
 //	- utf-16 pairs (JB_UTF16_SURROGATE_PAIRS): Non-standard but not really a good
 //		case for not supporting. Allows adding pairs of utf-16 characters using
 //		\ud800+high 10 bits, \udc00+low 10 bits for higher value utf-16 characters.
+//	- bom (JB_HANDLE_UTF8_BOM): JSON files are not defined as needing a bom header
+//		but it is convenient to handle.
+//	- array on root (JB_ALLOW_ROOT_ARRAY): If a JSON file begins with '[' instead
+//		of '{', handle it and change the root node to type JB_ARRAY instead of
+//		JB_ROOT. This is not proper JSON but is used in some files.
 //
 // License
 //	Public Domain; no warranty implied; use at your own risk; attribution appreciated.
@@ -112,6 +117,7 @@ JBItem* JSONBin(const char *json, unsigned int size, JBRet *info = 0);
 #define JB_UTF16_SURROGATE_PAIRS // if \ud800 - \udfff is encountered, check if it is actually a valid utf-16 double character (I know this is a crazy thing to support when only reading utf-8)
 #define JB_HASH_COUNT_DIV 4 // number of strings per hash table entry (larger=>less temp memory, smaller=>faster)
 #define JB_HANDLE_UTF8_BOM // if utf8 marker is detected, deal with it
+#define JB_ALLOW_ROOT_ARRAY // If a JSON file begins with '[' instead of '{', handle it and change the root node to type JB_ARRAY instead of JB_ROOT.
 
 // ITEM TYPES
 enum JBType {

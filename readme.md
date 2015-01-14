@@ -26,6 +26,7 @@ Achievements with this implementation
 - Parsed data can be customized depending on application usage with compiled traits.
 - Detailed data error reporting (line, column and context).
 - Minimal depencies on separate code libraries (no stl, etc.)
+- Supports array style JSON (first character is '[' insted of '{' in file, can be disabled).
 
 ###Limitations
 

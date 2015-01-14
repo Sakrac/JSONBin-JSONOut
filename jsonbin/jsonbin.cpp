@@ -306,7 +306,7 @@ static uint getWhiteSpaceSize(const char *text, uint left)
 	return orig - left;
 }
 
-#ifdef JB_JB_64BIT_VALUES
+#ifdef JB_64BIT_VALUES
 #define FP_MAXEXP_EXP DBL_MAX_10_EXP
 #define FP_MAXEXP_INT 1
 #define FP_MAXEXP_FRC .7976931348623158
@@ -314,7 +314,7 @@ static uint getWhiteSpaceSize(const char *text, uint left)
 #else
 #define FP_MAXEXP_EXP FLT_MAX_10_EXP
 #define FP_MAXEXP_INT 3
-#define FP_MAXEXP_FRC .402823466
+#define FP_MAXEXP_FRC .402823467
 #define INT_MAX_INT ((1UL<<31))
 #endif
 
@@ -389,7 +389,10 @@ static jbfloat getNumStr(const char *ptr, int left, jbint &intnum, int &num_len,
 		return ret;
 	}
 	// no fractional or exponential parts encountered, treat as integer and check range
-	representable = !int_over && n_int < INT_MAX_INT;
+	representable = !int_over;
+#ifndef JB_64BIT_VALUES		
+	represenatable = representable && n_int < INT_MAX_INT;
+#endif
 	if (representable) {
 		intnum = neg ? -jbint(n_int) : jbint(n_int);
 		return jbfloat(intnum);
@@ -683,6 +686,13 @@ JBItem* JSONBin(const char *json, uint size, JBRet *info)
 					break;
 
 				case '[':
+#ifdef JB_ALLOW_ROOT_ARRAY
+					if (ctx == JSON_ROOT) {
+						read.push_context(JSON_ARRAY);
+						if (pRet)
+							pRet->type = JB_ARRAY;
+					} else
+#endif
 					if (ctx == JSON_VALUE || ctx == JSON_ARRAY)	// allow array of arrays
 						read.push_context(JSON_ARRAY_OPEN);
 					else

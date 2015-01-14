@@ -200,7 +200,7 @@ bool SceneVec::Load(const jbin::JBItem *pJSON)
 	if (pJSON->getType() == jbin::JB_ARRAY && pJSON->getChildCount() == 3) {
 		float *ptr = &x;
 		for (jbin::JBIterator v = pJSON->begin(); v.valid(); ++v)
-			*ptr++ = v->getFloat();
+			*ptr++ = (float)v->getFloat();
 		return true;
 	}
 	return false;
@@ -277,7 +277,7 @@ bool ScenePathFollow::Load(const jbin::JBItem *pJSON)
 {
 	SceneComponent::Load(pJSON);
 	if (const jbin::JBItem *pPointsSrc = pJSON->findByHash(_FNV1A_wayPoints)) {
-		if ((nPoints = pPointsSrc->getChildCount())) {
+		if ((nPoints = (int)pPointsSrc->getChildCount())) {
 			pPoints = new SceneVec[nPoints];
 			SceneVec *ptr = pPoints;
 			for (jbin::JBIterator i = pPointsSrc->begin(); i.valid(); ++i) {
@@ -580,6 +580,6 @@ void SceneGraphTest(const char *filename)
 
 int main(int argc, char **argv)
 {
-	SceneGraphTest("scene.json");
+	SceneGraphTest("../samples/scene.json");
 	return 0;
 }
