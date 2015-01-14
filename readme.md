@@ -1,7 +1,7 @@
 ﻿JSONBin / JSONOut
 =================
 
-Just another parser/writer for JSON. I made a quick and dirty JSON parser that I wasn't very happy with, this is a completely different implementation to address the prior shortcomings. As far as I know this implementation satisfies https://tools.ietf.org/html/rfc7159 and the description at http://json.org. Note that JSONBin and JSONOut are completely independent and if you're only reading JSON files you can skip JSONOut and vice versa skip JSONBin if you're only writing JSON files. Detailed instructions are included in jsonbin.h and jsonout.h or in the [wiki](https://github.com/Sakrac/JSONBin-JSONOut/wiki)
+Just another parser/writer for JSON. I made a quick and dirty JSON parser that I wasn't very happy with, this is a completely different implementation to address the prior shortcomings. As far as I know this implementation satisfies https://tools.ietf.org/html/rfc7159 and the description at http://json.org. Note that JSONBin and JSONOut are completely independent and if you're only reading JSON files you can skip JSONOut and vice versa skip JSONBin if you're only writing JSON files. Detailed instructions are included in jsonbin.h and jsonout.h and in the [wiki](https://github.com/Sakrac/JSONBin-JSONOut/wiki).
 
 License
 -------
@@ -64,9 +64,8 @@ More documentation is available on the GitHub wiki page: https://github.com/Sakr
 Reasoning
 ---------
 
-http://utf8everywhere.org/
-
-http://www.joshbarczak.com/blog/?p=580
+- [UTF-8 Everywhere](http://utf8everywhere.org/)
+- [Josh Barczak blog on optimization critics](http://www.joshbarczak.com/blog/?p=580)
 
 The overarching goal of this implementation is to remove layers of abstraction, remove dependencies outside of clib, and minimize the number of allocations. It isn't necessary to keep the writing and parsing parts of a format compatible as long as both are easy to use, which means parsed data don't need to deal with inserting values in the middle and writing data can store off data as necessary without keeping a complete representation in-memory. A secondary goal is performance which became apparent after attempting to iterate with test files in the range of 100-200 MB. To reach acceptable performance a simple hash table approach was implemented to compare strings, and custom functions for reading and writing floating point values.
 
