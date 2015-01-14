@@ -47,8 +47,8 @@ void JSONOut::reset(bool rootArray)
 	buf_cur = 0;
 	if (rootArray) {
 #ifdef JO_ALLOW_ROOT_ARRAY
-		isArray.clear(0);
-		isArray.clear(1);
+		isArray.set(0);
+		isArray.set(1);
 		add_char('[');
 #else
 		error(ERR_ROOT_ARRAY);

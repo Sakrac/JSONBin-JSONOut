@@ -32,6 +32,7 @@ enum eJSONCtx {
 	JSON_TRUE_VALUE,
 	JSON_FALSE_VALUE,
 	JSON_NULL_VALUE,
+	JSON_COMMENT,		// non-standard extension to allow cases where users sprinkled C style comments into JSON files.
 };
 
 // unsigned typedefs
@@ -378,7 +379,7 @@ static jbfloat getNumStr(const char *ptr, int left, jbint &intnum, int &num_len,
 
 	if (real) {
 		double frac = double(n_frac) / pow(10.0, n_frac_size);
-		representable = n_exp < FP_MAXEXP_EXP || (n_exp == FP_MAXEXP_EXP && (n_int < FP_MAXEXP_INT || (n_int == FP_MAXEXP_INT && frac < FP_MAXEXP_FRC)));
+		representable = n_exp < FP_MAXEXP_EXP || (n_exp == FP_MAXEXP_EXP && (n_int < FP_MAXEXP_INT || (n_int == FP_MAXEXP_INT && frac <= FP_MAXEXP_FRC)));
 		if (!representable)
 			return jbfloat(0.0);
 
@@ -391,7 +392,7 @@ static jbfloat getNumStr(const char *ptr, int left, jbint &intnum, int &num_len,
 	// no fractional or exponential parts encountered, treat as integer and check range
 	representable = !int_over;
 #ifndef JB_64BIT_VALUES		
-	represenatable = representable && n_int < INT_MAX_INT;
+	representable = representable && n_int <= INT_MAX_INT;
 #endif
 	if (representable) {
 		intnum = neg ? -jbint(n_int) : jbint(n_int);
@@ -426,6 +427,46 @@ static const char *findChar(const char *str, uint left, char c)
 	}
 	return left ? str : NULL;
 }
+
+#ifdef JB_ALLOW_C_COMMENTS
+static const char *findChar(const char *str, uint left, char c1, char c2)
+{
+	while (left && *str != c1 && *str != c2) {
+		text_step(str, left);
+	}
+	return left ? str : NULL;
+}
+
+static uint endOfLine(const char *start, uint left)
+{
+	if (const char *nextLine = findChar(start, left, '\n'))
+		return (uint)(nextLine-start);	// characters to skip to get to next line
+	return left;	// end of line not found
+}
+
+static uint commentSize(const char *comment, uint left)
+{
+	if (left<2 || *comment!='/')
+		return left;	// error - end processing by going to end of file
+	const char *body = comment+2;
+	uint body_left = left-2;
+	switch (comment[1]) {
+		case '/':
+			return endOfLine(comment, left);
+		case '*':
+			while (const char *body_end = findChar(body, body_left, '*')) {
+				uint end_left = left - (uint)(body_end-body);
+				if (end_left<2)
+					return left;
+				else if (body_end[1]=='/')
+					return uint(body_end+2-comment);
+			}
+			break;
+	}
+	return left;
+}
+
+#endif
 
 // count how many instances of a given character precedes the current character
 static int countBack(const char *str, uint left, char c)
@@ -591,6 +632,12 @@ void JBParse::step_value(JBType type) {
 	}
 }
 
+#ifdef JB_ALLOW_C_COMMENTS
+#define JB_QUOTE_FIND '"', '/'
+#else
+#define JB_QUOTE_FIND '"'
+#endif
+
 // convert a text based json file to a binary representation
 JBItem* JSONBin(const char *json, uint size, JBRet *info)
 {
@@ -612,16 +659,23 @@ JBItem* JSONBin(const char *json, uint size, JBRet *info)
 		const char *quote_str = json;
 		uint quote_left = size;
 		uint string_size_orig = 0;
-		while (const char *quote_next = findChar(quote_str, quote_left, '"')) {	// find start of a quote
-			quote_left -= (uint)(quote_next - quote_str);
-			quote_str = quote_next;
-			if (const char *quote_end = quoteEnd(quote_str, quote_left)) {
-				numStrMax++;
-				quote_end++;
-				uint quote_len = (uint)(quote_end - quote_str);
-				string_size_orig += quote_len;
-				quote_left -= quote_len;
-				quote_str = quote_end;
+		while (const char *quote_next = findChar(quote_str, quote_left, JB_QUOTE_FIND)) {	// find start of a quote
+#ifdef JB_ALLOW_C_COMMENTS
+			if (*quote_next=='/' && (quote_next[1]=='/' || quote_next[1]=='*')) {
+				text_skip(quote_str, quote_left, commentSize(quote_next, quote_left) + (quote_next-quote_str));
+			} else
+#endif
+			{
+				quote_left -= (uint)(quote_next - quote_str);
+				quote_str = quote_next;
+				if (const char *quote_end = quoteEnd(quote_str, quote_left)) {
+					numStrMax++;
+					quote_end++;
+					uint quote_len = (uint)(quote_end - quote_str);
+					string_size_orig += quote_len;
+					quote_left -= quote_len;
+					quote_str = quote_end;
+				}
 			}
 		}
 		strCache.numStrMax = numStrMax;
@@ -725,6 +779,16 @@ JBItem* JSONBin(const char *json, uint size, JBRet *info)
 				case ',':
 					if (ctx != JSON_OBJECT && ctx != JSON_ARRAY)
 						error = JBERR_UNEXPECTED_COMMA;
+					break;
+				case '/':
+#ifdef JB_ALLOW_C_COMMENTS
+					if (left && (*cursor=='/' || *cursor=='*')) {
+						text_back(cursor, left);
+						text_skip(cursor, left, commentSize(cursor, left));
+						read.push_context(JSON_COMMENT);
+					} else
+#endif
+						error = JBERR_UNEXPECTED_CHARACTER;
 					break;
 
 				default:
@@ -915,6 +979,11 @@ JBItem* JSONBin(const char *json, uint size, JBRet *info)
 						read.pItem->data.i = 0;
 					read.step_value(JB_NULL_VALUE);
 					break;
+#ifdef JB_ALLOW_C_COMMENTS
+				case JSON_COMMENT:
+					read.ctx_stack--;
+					break;
+#endif
 
 				default:
 					break;

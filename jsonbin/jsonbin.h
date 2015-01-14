@@ -86,6 +86,9 @@
 //	- array on root (JB_ALLOW_ROOT_ARRAY): If a JSON file begins with '[' instead
 //		of '{', handle it and change the root node to type JB_ARRAY instead of
 //		JB_ROOT.
+//	- C style comments (JB_ALLOW_C_COMMENTS): if "//" or "/*" encountered outside
+//		of strings, treat that as a C comment instead of an error. Definitely not
+//		valid JSON and can be disabled.
 //
 // License
 //	Public Domain; no warranty implied; use at your own risk; attribution appreciated.
@@ -118,6 +121,7 @@ JBItem* JSONBin(const char *json, unsigned int size, JBRet *info = 0);
 #define JB_HASH_COUNT_DIV 4 // number of strings per hash table entry (larger=>less temp memory, smaller=>faster)
 #define JB_HANDLE_UTF8_BOM // if utf8 marker is detected, deal with it
 #define JB_ALLOW_ROOT_ARRAY // If a JSON file begins with '[' instead of '{', handle it and change the root node to type JB_ARRAY instead of JB_ROOT.
+#define JB_ALLOW_C_COMMENTS	// if "//" or "/*" encountered outside of strings, treat that as a C comment instead of an error.
 
 // ITEM TYPES
 enum JBType {
