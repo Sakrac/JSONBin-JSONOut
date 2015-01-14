@@ -85,7 +85,7 @@
 //		but it is convenient to handle.
 //	- array on root (JB_ALLOW_ROOT_ARRAY): If a JSON file begins with '[' instead
 //		of '{', handle it and change the root node to type JB_ARRAY instead of
-//		JB_ROOT. This is not proper JSON but is used in some files.
+//		JB_ROOT.
 //
 // License
 //	Public Domain; no warranty implied; use at your own risk; attribution appreciated.

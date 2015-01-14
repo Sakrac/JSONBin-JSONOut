@@ -36,8 +36,7 @@
 //		if floating point printing JSONOut uses an internal floating point to
 //		string function by default. This can be disabled.
 //	- JO_ALLOW_ROOT_ARRAY: Allow JSON output to be an array instead of a
-//		collection of objects. This is not valid JSON but some versions of JSON
-//		parsers apparently allows and expects it.
+//		collection of objects.
 //
 // Notes
 //	- Users changing code to fit a purpose is encouraged over supplying
@@ -58,7 +57,7 @@
 
 #define JO_SUPPORT_WCHAR	// enable wchar_t support (saved JSON will still be utf-8, but no conversion needed for function calls)
 #define JO_FAST_FRAC		// instead of using snprintf use a faster way to output numbers as text (snprintf is really slow)
-#define JO_ALLOW_ROOT_ARRAY	// not a valid JSON file, but this case exists. Enable root array from the JSONOut constructor or set it before adding items.
+#define JO_ALLOW_ROOT_ARRAY	// Export JSON as a file array. Enable root array from the JSONOut constructor or set it before adding items.
 
 namespace jout {
 
